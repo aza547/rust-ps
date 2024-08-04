@@ -1,4 +1,5 @@
 use std::{thread, time};
+use std::ffi::OsStr;
 use sysinfo::System;
 
 fn main() {
@@ -7,10 +8,10 @@ fn main() {
     loop {
         system.refresh_all();
 
-        let mut retail_processes = system.processes_by_exact_name("Wow.exe");
-        let mut retail_beta_processes = system.processes_by_exact_name("WowB.exe");
-        let mut retail_ptr_processes = system.processes_by_exact_name("WowT.exe");
-        let mut classic_processes = system.processes_by_exact_name("WowClassic.exe");
+        let mut retail_processes = system.processes_by_exact_name(OsStr::new("Wow.exe"));
+        let mut retail_beta_processes = system.processes_by_exact_name(OsStr::new("WowB.exe"));
+        let mut retail_ptr_processes = system.processes_by_exact_name(OsStr::new("WowT.exe"));
+        let mut classic_processes = system.processes_by_exact_name(OsStr::new("WowClassic.exe"));
 
         let retail = retail_processes.next().is_some() || retail_beta_processes.next().is_some() || retail_ptr_processes.next().is_some();
         let classic = classic_processes.next().is_some();

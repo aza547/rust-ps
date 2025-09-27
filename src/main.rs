@@ -1,12 +1,14 @@
-use std::{thread, time};
 use std::ffi::OsStr;
-use sysinfo::System;
+use std::{thread, time};
+use sysinfo::{ProcessRefreshKind, RefreshKind, System};
 
 fn main() {
     let mut system = System::new_all();
 
     loop {
-        system.refresh_all();
+        system.refresh_specifics(
+            RefreshKind::new().with_processes(ProcessRefreshKind::everything().without_cpu()),
+        );
 
         let mut retail_processes = system.processes_by_exact_name(OsStr::new("Wow.exe"));
         let mut retail_beta_processes = system.processes_by_exact_name(OsStr::new("WowB.exe"));

@@ -2,6 +2,15 @@ use std::ffi::OsStr;
 use std::{thread, time};
 use sysinfo::{ProcessRefreshKind, RefreshKind, System};
 
+// Handle both Windows and Linux/Wine/Proton process name variations
+// Case-insensitive filesystems on windows make this a bit of a puzzle depending
+// on how the battle.net client decides to launch the process.
+const RETAIL_PROCESSES: &[&str] = &["Wow.exe", "WoW.exe"];
+const RETAIL_BETA_PROCESSES: &[&str] = &["WowB.exe", "WoWB.exe"];
+const RETAIL_PTR_PROCESSES: &[&str] = &["WowT.exe", "WoWT.exe"];
+const CLASSIC_PROCESSES: &[&str] = &["WowClassic.exe", "WoWClassic.exe"];
+const CLASSIC_PTR_PROCESSES: &[&str] = &["WowClassicT.exe", "WoWClassicT.exe"];
+
 fn main() {
     let mut system = System::new_all();
 
@@ -10,14 +19,14 @@ fn main() {
             RefreshKind::new().with_processes(ProcessRefreshKind::everything().without_cpu()),
         );
 
-        let mut retail_processes = system.processes_by_exact_name(OsStr::new("Wow.exe"));
-        let mut retail_beta_processes = system.processes_by_exact_name(OsStr::new("WowB.exe"));
-        let mut retail_ptr_processes = system.processes_by_exact_name(OsStr::new("WowT.exe"));
-        let mut classic_processes = system.processes_by_exact_name(OsStr::new("WowClassic.exe"));
-        let mut classic_ptr_processes = system.processes_by_exact_name(OsStr::new("WowClassicT.exe"));
+        let retail = RETAIL_PROCESSES.iter()
+            .chain(RETAIL_BETA_PROCESSES.iter())
+            .chain(RETAIL_PTR_PROCESSES.iter())
+            .any(|name| system.processes_by_exact_name(OsStr::new(name)).next().is_some());
 
-        let retail = retail_processes.next().is_some() || retail_beta_processes.next().is_some() || retail_ptr_processes.next().is_some();
-        let classic = classic_processes.next().is_some() || classic_ptr_processes.next().is_some();
+        let classic = CLASSIC_PROCESSES.iter()
+            .chain(CLASSIC_PTR_PROCESSES.iter())
+            .any(|name| system.processes_by_exact_name(OsStr::new(name)).next().is_some());
 
         // This is JSON.
         println!("{{ \"Retail\": {}, \"Classic\": {} }}", retail, classic);

@@ -1,5 +1,6 @@
 use std::ffi::OsStr;
-use std::{thread, time};use sysinfo::{Process, ProcessRefreshKind, RefreshKind, System};
+use std::{thread, time};
+use sysinfo::{Process, ProcessRefreshKind, RefreshKind, System};
 
 // Handle both Windows and Linux/Wine/Proton process name variations
 // Case-insensitive filesystems on windows make this a bit of a puzzle depending

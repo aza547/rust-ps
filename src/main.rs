@@ -22,6 +22,25 @@ fn is_forever(process: &Process) -> bool {
         .and_then(|dir| dir.file_name())
         .and_then(|name| name.to_str())
         .is_some_and(|name| name.eq_ignore_ascii_case(FOREVER_FOLDER))
+        || launched_from_forever(process)
+}
+
+// Under Wine/Proton, exe() is the Wine preloader rather than Wow.exe, so check
+// the Windows path the client was launched with (argv[0]) instead, e.g.
+// C:\Program Files (x86)\World of Warcraft\_forever_\Wow.exe
+#[cfg(not(windows))]
+fn launched_from_forever(process: &Process) -> bool {
+    process
+        .cmd()
+        .first()
+        .and_then(|arg| arg.to_str())
+        .and_then(|path| path.rsplit(['\\', '/']).nth(1))
+        .is_some_and(|name| name.eq_ignore_ascii_case(FOREVER_FOLDER))
+}
+
+#[cfg(windows)]
+fn launched_from_forever(_process: &Process) -> bool {
+    false
 }
 
 fn main() {
